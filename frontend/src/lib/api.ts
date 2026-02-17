@@ -59,6 +59,7 @@ export interface ExpertProfileResponse {
   demo_sentence: string;
   demo_layers: DemoChar[][];
   sample_count: number;
+  warnings?: string[];
 }
 
 export async function fetchExpertProfile(modelType: ModelType = 'char'): Promise<ExpertProfileResponse> {

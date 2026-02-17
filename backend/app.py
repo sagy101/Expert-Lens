@@ -485,6 +485,8 @@ def expert_profile(model_type: str = "char"):
                 layer_examples.append(words[:5])
         demo_example_words.append(layer_examples)
 
+    llm_errors = []
+
     # Build per-expert stats (used by both LLM and programmatic labeling)
     layers_out = []
     for li in range(n_layers):
@@ -514,7 +516,9 @@ def expert_profile(model_type: str = "char"):
             llm_labels = label_experts_with_llm(experts_raw, li)
             logging.info("LLM labeling succeeded for layer %d", li)
         except Exception as exc:
-            logging.warning("LLM labeling failed for layer %d: %s — using programmatic fallback", li, exc)
+            msg = f"LLM labeling failed for layer {li}: {exc}"
+            logging.warning("%s — using programmatic fallback", msg)
+            llm_errors.append(msg)
 
         experts_out = []
         for ei, raw in enumerate(experts_raw):
@@ -547,6 +551,7 @@ def expert_profile(model_type: str = "char"):
         "layers": layers_out,
         "demo_sentence": DEMO_SENTENCE,
         "demo_layers": demo_sentences,
+        "warnings": llm_errors,
         "sample_count": len(DOMAIN_SAMPLES),
     }
 

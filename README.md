@@ -94,6 +94,24 @@ backend/.venv/bin/python3 backend/train_bpe.py --epochs 30
 
 Automatically downloads TinyStories, trains with progress bars, and runs a final test evaluation.
 
+## Configuration
+
+To enable **LLM-powered expert labeling** (where an LLM reads the routing patterns and names the experts), you need to provide access to an OpenAI-compatible LLM API.
+
+1.  Create a `.env` file in the root directory:
+    ```bash
+    cp .env.example .env
+    ```
+
+2.  Add your API keys:
+    ```ini
+    LITELLM_URL="https://your-llm-endpoint.com"  # Base URL for the LLM API
+    LITELLM_KEY="sk-..."                         # Your API key
+    LITELLM_MODEL="anthropic.claude-3-opus"      # Model to use (optional, defaults to claude-opus)
+    ```
+
+If these are not provided, the "Expert Analyzer" will use programmatic fallback labels (e.g., "Consonant Expert") instead of rich LLM-generated descriptions.
+
 ## Visualizations
 
 - **Model Toggle** — switch between character-level and BPE tokenization in the header to compare how tokenization affects expert specialization

@@ -170,6 +170,35 @@ export default function AnalyzerView({ modelInfo, modelType, cached, onCacheUpda
         </div>
       </div>
 
+      {/* Warnings */}
+      <AnimatePresence>
+        {profile?.warnings && profile.warnings.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl">⚠️</span>
+              <div>
+                <h3 className="text-sm font-semibold text-amber-400">LLM Labeling Issues</h3>
+                <ul className="mt-1 space-y-1">
+                  {profile.warnings.map((w, i) => (
+                    <li key={i} className="text-[11px] text-amber-300/80 font-mono">
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-[11px] text-amber-400/60 mt-2">
+                  Showing programmatic labels instead. Check your LITELLM_URL and connectivity.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Results */}
       <AnimatePresence>
         {phase === "done" && profile && (

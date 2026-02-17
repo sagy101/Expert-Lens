@@ -3,6 +3,10 @@
 import json
 import os
 import httpx
+from dotenv import load_dotenv
+
+# Load .env from project root
+load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"))
 
 LITELLM_URL = os.getenv("LITELLM_URL", "https://litellm.mlinf.lab.ppops.net")
 LITELLM_KEY = os.getenv("LITELLM_KEY", "")
