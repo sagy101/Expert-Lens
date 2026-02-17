@@ -15,7 +15,7 @@ interface Props {
 /* ── layout constants ─────────────────────────────── */
 const BLOCK_W = 210;
 const BLOCK_GAP = 24;
-const PAD_X = 32;
+const PAD_X = 56;
 const PAD_Y = 18;
 
 const ATTN_H = 36;
@@ -36,7 +36,7 @@ export default function NetworkDiagram({ modelInfo, layers, selectedToken }: Pro
   const expertsH = expertRows * EXPERT_H + (expertRows - 1) * EXPERT_GAP;
 
   const blockInnerH = ATTN_H + 14 + ROUTER_H + 14 + expertsH + 14 + SUM_R * 2;
-  const svgW = nLayers * BLOCK_W + (nLayers - 1) * BLOCK_GAP + PAD_X * 2 + 40;
+  const svgW = nLayers * BLOCK_W + (nLayers - 1) * BLOCK_GAP + PAD_X * 2 + 60;
   const svgH = blockInnerH + PAD_Y * 2 + 50;
 
   const getActiveExperts = (li: number): Set<number> => {
@@ -64,12 +64,12 @@ export default function NetworkDiagram({ modelInfo, layers, selectedToken }: Pro
       </defs>
 
       {/* ── Input label ─────────────────────────── */}
-      <text x={PAD_X - 4} y={svgH / 2 + 4} textAnchor="end" fill="#818cf8" fontSize={11} fontWeight={600}>
+      <text x={PAD_X + 12} y={svgH / 2 + 4} textAnchor="end" fill="#818cf8" fontSize={11} fontWeight={600}>
         tokens →
       </text>
 
       {/* ── Output label ────────────────────────── */}
-      <text x={svgW - PAD_X + 16} y={svgH / 2 + 4} textAnchor="start" fill="#818cf8" fontSize={11} fontWeight={600}>
+      <text x={svgW - PAD_X - 8} y={svgH / 2 + 4} textAnchor="start" fill="#818cf8" fontSize={11} fontWeight={600}>
         → logits
       </text>
 

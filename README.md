@@ -4,6 +4,8 @@
 
 See how a neural network *routes* different tokens to different expert sub-networks in real time. Built from scratch — model, training, and UI — to visually explain what MoE is and why it matters.
 
+Switch between **character-level** and **BPE (subword) tokenization** to see how tokenization strategy shapes expert specialization.
+
 ![Expert Lens Demo](screenshots/demo.png)
 
 ## What is MoE?
@@ -34,6 +36,7 @@ Each **MoE FFN** contains:
 - **Load-balancing loss** to prevent expert collapse
 
 **Model**: 4M parameters · 3 layers · 8 experts · top-2 routing
+**Tokenization**: Two modes — **character-level** (86 tokens) and **BPE subword** (512 tokens)
 **Data**: [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) (Microsoft Research) — simple stories that produce coherent text even from tiny models
 **Splits**: 80% train · 10% validation · 10% test
 
@@ -79,20 +82,26 @@ cd frontend && npm run dev
 
 ### Re-train from scratch (optional)
 
-If you want to train the model yourself instead of using the included weights:
+If you want to train the models yourself instead of using the included weights:
 
 ```bash
+# Character-level model
 backend/.venv/bin/python3 backend/train.py --epochs 30
+
+# BPE tokenizer + model (trains tokenizer first, then model)
+backend/.venv/bin/python3 backend/train_bpe.py --epochs 30
 ```
 
 Automatically downloads TinyStories, trains with progress bars, and runs a final test evaluation.
 
 ## Visualizations
 
+- **Model Toggle** — switch between character-level and BPE tokenization in the header to compare how tokenization affects expert specialization
 - **Network Diagram** — animated SVG showing the full architecture; active experts glow with color-coded connections when you select a token
 - **Expert Usage** — bar charts showing how evenly the router distributes tokens across experts (load balancing in action)
 - **Token Selector** — click any input token to see which experts it routes to across all layers
 - **Generated Text** — input shown in purple, generated continuation in green
+- **Expert Analyzer** — profile all experts across all layers; LLM-generated labels describe each expert's specialization
 
 ## Tech Stack
 
@@ -112,18 +121,23 @@ Automatically downloads TinyStories, trains with progress bars, and runs a final
 expert-lens/
 ├── backend/
 │   ├── moe_model.py      # MoE transformer (from scratch)
-│   ├── train.py           # Training script with tqdm + AMP
-│   ├── app.py             # FastAPI inference API
+│   ├── train.py           # Character-level training script
+│   ├── train_bpe.py       # BPE tokenizer + model training
+│   ├── app.py             # FastAPI API (serves both models)
+│   ├── llm_labeler.py     # LLM-powered expert labeling
+│   ├── samples.py         # Sample texts for expert profiling
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── App.tsx                    # Main layout
 │   │   ├── components/
+│   │   │   ├── InferenceView.tsx      # Inference tab
+│   │   │   ├── AnalyzerView.tsx       # Expert profiling tab
 │   │   │   ├── NetworkDiagram.tsx     # Animated SVG architecture
 │   │   │   ├── ExpertUsage.tsx        # Expert activation bars
 │   │   │   ├── TextInput.tsx          # Input + example prompts
 │   │   │   └── InfoPanel.tsx          # Educational annotations
-│   │   └── lib/api.ts                # API client
+│   │   └── lib/api.ts                # API client + types
 │   └── package.json
 ├── scripts/screenshot.py
 ├── Makefile
