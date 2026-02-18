@@ -60,9 +60,9 @@ def _load_char_model():
         "model": mdl,
         "config": cfg,
         "encode": lambda text: [stoi.get(ch, 0) for ch in text],
-        "decode": lambda ids: [itos.get(i, "?") for i in ids],
+        "decode": lambda ids, **_kw: [itos.get(i, "?") for i in ids],
         "tokenize_display": lambda text: list(text),
-        "decode_display": lambda ids: [itos.get(i, "?") for i in ids],
+        "decode_display": lambda ids, **_kw: [itos.get(i, "?") for i in ids],
         "token_type": "char",
     }
     print(f"Char model loaded on {device} (val_loss={checkpoint.get('val_loss', '?')})")
@@ -94,14 +94,20 @@ def _load_bpe_model():
             prev_end = end
         return result
 
-    def _bpe_decode_display(ids: list[int]) -> list[str]:
-        """Decode generated token ids, preserving whitespace via incremental decode."""
+    def _bpe_decode_display(ids: list[int], prefix_ids: list[int] | None = None) -> list[str]:
+        """Decode generated token ids, preserving whitespace via incremental decode.
+
+        If prefix_ids is given, the decoder uses them as context so that the
+        first generated token gets its leading space (Metaspace strips the
+        leading ▁ from the very first token in a sequence).
+        """
         if not ids:
             return []
+        prefix = prefix_ids or []
+        prev = tokenizer.decode(prefix) if prefix else ""
         result = []
-        prev = ""
         for i in range(1, len(ids) + 1):
-            full = tokenizer.decode(ids[:i])
+            full = tokenizer.decode(prefix + ids[:i])
             result.append(full[len(prev):])
             prev = full
         return result
@@ -233,7 +239,7 @@ def infer(req: InferRequest):
 
     input_tokens = tokenize_display(text)
     gen_ids = generated_idx[0, len(ids) :].tolist()
-    generated_tokens = decode_fn(gen_ids)
+    generated_tokens = decode_fn(gen_ids, prefix_ids=ids)
 
     prefill_layers = _moe_info_to_dict(prefill_info)
 
