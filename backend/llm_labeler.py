@@ -1,7 +1,9 @@
 """Use an LLM to generate concise, intuitive labels for MoE experts."""
 
 import json
+import logging
 import os
+import time
 import httpx
 from dotenv import load_dotenv
 
@@ -152,24 +154,46 @@ def label_experts_with_llm(layer_experts: list[dict], layer_id: int) -> list[dic
         expert_data=expert_blocks,
     )
 
-    response = httpx.post(
-        f"{LITELLM_URL}/chat/completions",
-        headers={
-            "Authorization": f"Bearer {LITELLM_KEY}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": LITELLM_MODEL,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-            ],
-            "temperature": 0.3,
-            "max_tokens": 1024,
-        },
-        timeout=30.0,
-    )
-    response.raise_for_status()
+    max_retries = 3
+    base_delay = 2.0
+    last_exc = None
+
+    for attempt in range(max_retries + 1):
+        try:
+            response = httpx.post(
+                f"{LITELLM_URL}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {LITELLM_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": LITELLM_MODEL,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_msg},
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 1024,
+                },
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            break  # success
+        except (httpx.HTTPStatusError, httpx.ConnectError, httpx.ReadTimeout) as exc:
+            last_exc = exc
+            is_server_error = isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code >= 500
+            is_transient = isinstance(exc, (httpx.ConnectError, httpx.ReadTimeout))
+            if (is_server_error or is_transient) and attempt < max_retries:
+                delay = base_delay * (2 ** attempt)
+                logging.warning(
+                    "LLM request failed (attempt %d/%d): %s — retrying in %.1fs",
+                    attempt + 1, max_retries + 1, exc, delay,
+                )
+                time.sleep(delay)
+            else:
+                raise
+    else:
+        raise last_exc  # type: ignore[misc]
 
     data = response.json()
     content = data["choices"][0]["message"]["content"]

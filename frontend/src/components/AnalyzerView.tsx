@@ -55,12 +55,12 @@ export default function AnalyzerView({ modelInfo, modelType, cached, onCacheUpda
     const stepDelay = (ms: number) => new Promise((r) => setTimeout(r, ms));
     const request = fetchExpertProfile(modelType);
 
-    // Step 0: Ingesting Corpus (show samples)
-    await stepDelay(2500);
+    // Step 0: Ingesting Corpus (show samples cycling through)
+    await stepDelay(20000);
     
-    // Step 1: Mapping Activations
+    // Step 1: Mapping Expert Activations (router animation)
     setActiveStep(1);
-    await stepDelay(2500);
+    await stepDelay(1500);
     
     // Step 2: LLM Profiling (waiting for response)
     setActiveStep(2);
