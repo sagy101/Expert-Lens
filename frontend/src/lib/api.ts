@@ -62,6 +62,12 @@ export interface ExpertProfileResponse {
   warnings?: string[];
 }
 
+export async function fetchSamples(): Promise<string[]> {
+  const res = await fetch('/api/samples');
+  if (!res.ok) throw new Error('Failed to fetch samples');
+  return res.json();
+}
+
 export async function fetchExpertProfile(modelType: ModelType = 'char'): Promise<ExpertProfileResponse> {
   const res = await fetch(`/api/expert-profile?model_type=${modelType}`);
   if (!res.ok) throw new Error('Failed to fetch expert profile');

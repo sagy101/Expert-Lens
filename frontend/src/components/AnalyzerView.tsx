@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchExpertProfile, type ExpertProfileResponse, type ModelInfo, type ModelType } from "../lib/api";
+import AnalysisProgress from "./AnalysisProgress";
 
 export interface AnalyzerState {
   modelType: ModelType;
@@ -54,9 +55,14 @@ export default function AnalyzerView({ modelInfo, modelType, cached, onCacheUpda
     const stepDelay = (ms: number) => new Promise((r) => setTimeout(r, ms));
     const request = fetchExpertProfile(modelType);
 
-    await stepDelay(700);
+    // Step 0: Ingesting Corpus (show samples)
+    await stepDelay(2500);
+    
+    // Step 1: Mapping Activations
     setActiveStep(1);
-    await stepDelay(700);
+    await stepDelay(2500);
+    
+    // Step 2: LLM Profiling (waiting for response)
     setActiveStep(2);
 
     try {
@@ -195,6 +201,21 @@ export default function AnalyzerView({ modelInfo, modelType, cached, onCacheUpda
                 </p>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Progress Visualization */}
+      <AnimatePresence mode="wait">
+        {phase === "running" && (
+          <motion.div
+            key="progress"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <AnalysisProgress step={activeStep} />
           </motion.div>
         )}
       </AnimatePresence>

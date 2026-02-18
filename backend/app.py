@@ -388,6 +388,13 @@ def _get_example_words(text: str, expert_id: int, topk_indices):
     return words
 
 
+@app.get("/api/samples")
+def get_samples():
+    """Return the sample texts used for expert profiling."""
+    from samples import DOMAIN_SAMPLES
+    return [text for text, domain in DOMAIN_SAMPLES]
+
+
 @app.get("/api/expert-profile")
 def expert_profile(model_type: str = "char"):
     """Run sample texts through the model, aggregate routing, return per-expert token profiles."""
