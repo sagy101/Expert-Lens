@@ -121,6 +121,8 @@ If these are not provided, the "Expert Analyzer" will use programmatic fallback 
 - **Generated Text** — input shown in purple, generated continuation in green
 - **Expert Analyzer** — profile all experts across all layers; LLM-generated labels describe each expert's specialization
 
+![Expert Analyzer](screenshots/analysis.png)
+
 ## Tech Stack
 
 | Layer | Technology |
